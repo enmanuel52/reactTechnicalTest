@@ -81,7 +81,6 @@
   --color-inverse-on-surface: var(--md-inverse-on-surface);
 
   --animate-progress: progress 1.4s ease-in-out infinite;
-  --animate-spin-fast: spin 0.9s linear infinite;
 
   @keyframes progress {
     to {

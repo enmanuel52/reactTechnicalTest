@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom/vitest'
 import 'fake-indexeddb/auto'
 import { cleanup } from '@testing-library/react'
+import { db } from '@/shared/db/db'
 import { afterAll, afterEach, beforeAll, vi } from 'vitest'
 import { server } from './msw/server'
 
@@ -25,8 +26,9 @@ class IntersectionObserverMock implements IntersectionObserver {
 vi.stubGlobal('IntersectionObserver', IntersectionObserverMock)
 
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }))
-afterEach(() => {
+afterEach(async () => {
   cleanup()
+  await db.posts.clear()
   server.resetHandlers()
   IntersectionObserverMock.instances = []
 })
