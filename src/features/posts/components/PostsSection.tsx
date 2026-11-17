@@ -1,33 +1,21 @@
-import { useCallback } from 'react'
 import { useT } from '@/shared/i18n/useT'
 import { ErrorBanner } from '@/shared/ui/ErrorBanner'
-import { LoadMore } from '@/shared/ui/LoadMore'
 import { LoadingState } from '@/shared/ui/LoadingState'
 import { useLocalPosts } from '../hooks/useLocalPosts'
 import { useUserPosts } from '../hooks/useUserPosts'
 import { PostItem } from './PostItem'
 
 /**
- * Posts written in the app (saved locally) are pinned above the API's posts and
- * don't count towards the page size. They show even while the API is loading or
- * has failed, since they come from a different source.
+ * Posts written in the app (saved locally) are pinned above the API's posts.
+ * They show even while the API is loading or has failed, since they come from
+ * a different source.
  */
 export function PostsSection({ userId }: { userId: number }) {
   const t = useT()
   const local = useLocalPosts(userId)
-  const {
-    data: api,
-    isPending,
-    isError,
-    refetch,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isFetchNextPageError,
-  } = useUserPosts(userId)
-  const loadMore = useCallback(() => void fetchNextPage(), [fetchNextPage])
+  const { data: api, isPending, isError, refetch } = useUserPosts(userId)
 
-  const posts = [...(local.data ?? []), ...(api?.posts ?? [])]
+  const posts = [...(local.data ?? []), ...(api ?? [])]
   // Only call the list empty once both sources have answered.
   const isEmpty = api !== undefined && local.data !== undefined && posts.length === 0
 
@@ -38,7 +26,7 @@ export function PostsSection({ userId }: { userId: number }) {
           {t.posts}
         </h3>
         <span aria-live="polite" className="text-xs text-on-surface-variant">
-          {api ? t.postsCount((local.data?.length ?? 0) + api.total) : ''}
+          {api ? t.postsCount(posts.length) : ''}
         </span>
       </div>
 
@@ -59,18 +47,13 @@ export function PostsSection({ userId }: { userId: number }) {
           retryLabel={t.retry}
           onRetry={() => void refetch()}
         />
-      ) : isEmpty ? (
-        <div className="py-8 text-center">
-          <p className="text-base leading-6">{t.noPostsTitle}</p>
-          <p className="text-on-surface-variant">{t.noPostsBody}</p>
-        </div>
       ) : (
-        <LoadMore
-          hasNextPage={hasNextPage}
-          isFetchingNextPage={isFetchingNextPage}
-          isError={isFetchNextPageError}
-          onLoadMore={loadMore}
-        />
+        isEmpty && (
+          <div className="py-8 text-center">
+            <p className="text-base leading-6">{t.noPostsTitle}</p>
+            <p className="text-on-surface-variant">{t.noPostsBody}</p>
+          </div>
+        )
       )}
     </section>
   )
