@@ -1,8 +1,6 @@
 import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll'
 import { useT } from '@/shared/i18n/useT'
 import { Button } from './Button'
-import { ExpandMoreIcon } from './icons'
-import { IconButton } from './IconButton'
 import { LoadingState } from './LoadingState'
 
 interface LoadMoreProps {
@@ -11,29 +9,17 @@ interface LoadMoreProps {
   /** True when fetching the *next* page failed (already-loaded items stay visible). */
   isError: boolean
   onLoadMore: () => void
-  /**
-   * `scroll` (default): loads the next page automatically when the footer scrolls into view.
-   * `button`: only loads when the user presses the icon button.
-   */
-  mode?: 'scroll' | 'button'
 }
 
 /**
- * End-of-list footer for paginated lists. In `scroll` mode the footer doubles as
- * an infinite-scroll sentinel and keeps a text button as a fallback (keyboard
- * users, no IntersectionObserver, failed requests). In `button` mode loading is
- * always an explicit action on an icon button.
+ * End-of-list footer for paginated lists: an invisible sentinel loads the next
+ * page automatically when scrolled into view, and a button remains as a
+ * fallback (keyboard users, no IntersectionObserver, failed requests).
  */
-export function LoadMore({
-  hasNextPage,
-  isFetchingNextPage,
-  isError,
-  onLoadMore,
-  mode = 'scroll',
-}: LoadMoreProps) {
+export function LoadMore({ hasNextPage, isFetchingNextPage, isError, onLoadMore }: LoadMoreProps) {
   const t = useT()
   const sentinelRef = useInfiniteScroll<HTMLDivElement>({
-    enabled: mode === 'scroll' && hasNextPage && !isFetchingNextPage && !isError,
+    enabled: hasNextPage && !isFetchingNextPage && !isError,
     onLoadMore,
   })
 
@@ -49,12 +35,6 @@ export function LoadMore({
           <Button variant="text" onClick={onLoadMore}>
             {t.retry}
           </Button>
-        </div>
-      ) : mode === 'button' ? (
-        <div className="flex justify-center">
-          <IconButton label={t.loadMore} onClick={onLoadMore} className="border border-outline">
-            <ExpandMoreIcon />
-          </IconButton>
         </div>
       ) : (
         <div className="flex justify-center">

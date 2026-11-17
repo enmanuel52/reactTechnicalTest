@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { usePreferences } from '@/shared/store/preferences'
-import { API, usersHandler } from '@/test/msw/handlers'
+import { API, makeUsers } from '@/test/msw/handlers'
 import { server } from '@/test/msw/server'
 import { renderApp } from '@/test/renderWithProviders'
 import { act } from 'react'
@@ -44,50 +44,42 @@ describe('UsersPane', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 
-  it('loads further pages of 10 only when the Load more icon button is pressed', async () => {
-    const user = userEvent.setup()
-    server.use(usersHandler(25))
+  it('loads every user in a single request, without pagination', async () => {
+    const requests: URL[] = []
+    server.use(
+      http.get(`${API}/users`, ({ request }) => {
+        requests.push(new URL(request.url))
+        return HttpResponse.json(makeUsers(25))
+      }),
+    )
     renderApp()
 
-    await screen.findByText('Leanne Graham')
-    expect(screen.getAllByRole('link')).toHaveLength(10)
+    // More users than the old page size of 10: all of them render at once.
+    const list = await screen.findByRole('list')
+    await waitFor(() => expect(within(list).getAllByRole('link')).toHaveLength(25))
     expect(screen.getByText('25 users')).toBeInTheDocument()
+    expect(within(list).getAllByRole('link').at(-1)).toHaveTextContent('Test User 25')
 
-    // Scrolling to the end does nothing: no automatic loading for users.
-    triggerIntersection()
-    expect(screen.getAllByRole('link')).toHaveLength(10)
-
-    await user.click(screen.getByRole('button', { name: 'Load more' }))
-    await waitFor(() => expect(screen.getAllByRole('link')).toHaveLength(20))
-
-    await user.click(await screen.findByRole('button', { name: 'Load more' }))
-    await waitFor(() => expect(screen.getAllByRole('link')).toHaveLength(25))
-
-    // Everything is loaded, so the button goes away.
-    expect(screen.queryByRole('button', { name: 'Load more' })).not.toBeInTheDocument()
+    expect(requests).toHaveLength(1)
+    expect(requests[0]?.searchParams.has('_page')).toBe(false)
+    expect(requests[0]?.searchParams.has('_limit')).toBe(false)
   })
 
-  it('keeps loaded users and offers a retry when the next page fails', async () => {
-    const user = userEvent.setup()
-    server.use(usersHandler(25))
-    renderApp()
-    await screen.findByText('Leanne Graham')
-
+  it('has no load-more control at the end of the list, even when it is scrolled into view', async () => {
+    const requests: string[] = []
     server.use(
-      http.get(`${API}/users`, ({ request }) =>
-        new URL(request.url).searchParams.get('_page') === '2'
-          ? new HttpResponse(null, { status: 500 })
-          : HttpResponse.json([]),
-      ),
+      http.get(`${API}/users`, () => {
+        requests.push('users')
+        return HttpResponse.json(makeUsers(10))
+      }),
     )
-    await user.click(screen.getByRole('button', { name: 'Load more' }))
+    renderApp()
+    await screen.findByText('Clementina DuBuque')
 
-    const alert = await screen.findByText("We couldn't load more.")
-    expect(alert).toBeInTheDocument()
-    expect(screen.getAllByRole('link')).toHaveLength(10)
+    triggerIntersection()
 
-    server.resetHandlers(usersHandler(25))
-    await user.click(screen.getByRole('button', { name: 'Try again' }))
-    await waitFor(() => expect(screen.getAllByRole('link')).toHaveLength(20))
+    expect(screen.queryByRole('button', { name: 'Load more' })).not.toBeInTheDocument()
+    expect(screen.queryByText('Loading more…')).not.toBeInTheDocument()
+    expect(requests).toHaveLength(1)
   })
 })

@@ -1,7 +1,5 @@
-import { useCallback } from 'react'
 import { useT } from '@/shared/i18n/useT'
 import { ErrorState } from '@/shared/ui/ErrorState'
-import { LoadMore } from '@/shared/ui/LoadMore'
 import { LinearProgress } from '@/shared/ui/LinearProgress'
 import { LoadingState } from '@/shared/ui/LoadingState'
 import { useUsers } from '../hooks/useUsers'
@@ -13,19 +11,7 @@ import { UserListItem } from './UserListItem'
 export function UsersPane() {
   const t = useT()
   const { input, setInput, query, clear } = useUserSearch()
-  const {
-    data,
-    isPending,
-    isError,
-    refetch,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isFetchNextPageError,
-    isPlaceholderData,
-  } = useUsers(query)
-  // Stable identity so the infinite-scroll observer isn't re-created on every render.
-  const loadMore = useCallback(() => void fetchNextPage(), [fetchNextPage])
+  const { data: users, isPending, isError, refetch, isPlaceholderData } = useUsers(query)
 
   return (
     <section
@@ -39,14 +25,14 @@ export function UsersPane() {
           {t.users}
         </h1>
         <span aria-live="polite" className="text-xs text-on-surface-variant">
-          {data ? t.usersCount(data.total) : ''}
+          {users ? t.usersCount(users.length) : ''}
         </span>
       </div>
 
       <div className="max-h-[calc(100vh-14rem)] min-h-80 overflow-y-auto">
         {isPending ? (
           <LoadingState label={t.loadingUsers} className="p-4" />
-        ) : isError && !data ? (
+        ) : isError && !users ? (
           <ErrorState
             title={t.usersErrorTitle}
             body={t.errorBody}
@@ -57,20 +43,13 @@ export function UsersPane() {
           <>
             {isPlaceholderData && <LinearProgress />}
             <ul className="m-0 flex list-none flex-col gap-0.5 p-0">
-              {data?.users.map((user) => (
+              {users?.map((user) => (
                 <UserListItem key={user.id} user={user} />
               ))}
             </ul>
-            {!isPlaceholderData && query && data?.users.length === 0 && (
+            {!isPlaceholderData && query && users?.length === 0 && (
               <NoResults query={query} onClear={clear} />
             )}
-            <LoadMore
-              hasNextPage={hasNextPage}
-              isFetchingNextPage={isFetchingNextPage}
-              isError={isFetchNextPageError}
-              onLoadMore={loadMore}
-              mode="button"
-            />
           </>
         )}
       </div>
