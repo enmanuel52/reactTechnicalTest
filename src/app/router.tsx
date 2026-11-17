@@ -1,4 +1,5 @@
 import { createBrowserRouter, type RouteObject } from 'react-router-dom'
+import { UserDetailPage } from '@/features/users/components/UserDetailPage'
 import { PickUserPlaceholder } from '@/features/users/components/PickUserPlaceholder'
 import { NotFoundPage } from './NotFoundPage'
 import { RootLayout } from './RootLayout'
@@ -12,6 +13,7 @@ export const routes: RouteObject[] = [
     errorElement: <RouteError />,
     children: [
       { index: true, element: <PickUserPlaceholder /> },
+      { path: 'users/:userId', element: <UserDetailPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

@@ -1,4 +1,4 @@
-import { getPage } from '@/shared/api/http'
+import { getJson, getPage } from '@/shared/api/http'
 import type { User } from './types'
 import { escapeRegex } from './utils/escapeRegex'
 
@@ -9,4 +9,8 @@ export function fetchUsersPage(page: number, query: string, signal?: AbortSignal
     params: { name_like: query ? escapeRegex(query) : undefined },
     signal,
   })
+}
+
+export function fetchUser(id: number, signal?: AbortSignal) {
+  return getJson<User>(`/users/${id}`, { signal })
 }

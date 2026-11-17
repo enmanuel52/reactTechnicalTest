@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom'
 import { useT } from '@/shared/i18n/useT'
+import { ButtonLink } from '@/shared/ui/ButtonLink'
 
 /** Route-level `errorElement`: catches render errors so the app never white-screens. */
 export function RouteError() {
@@ -11,13 +11,9 @@ export function RouteError() {
     >
       <h1 className="text-[22px] leading-7 font-normal">{t.unexpectedErrorTitle}</h1>
       <p className="text-on-surface-variant">{t.errorBody}</p>
-      <Link
-        to="/"
-        reloadDocument
-        className="mt-4 rounded-full px-3 py-2.5 font-medium text-primary hover:bg-primary/8"
-      >
+      <ButtonLink to="/" reloadDocument className="mt-4">
         {t.goHome}
-      </Link>
+      </ButtonLink>
     </div>
   )
 }

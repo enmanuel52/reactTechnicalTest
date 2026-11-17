@@ -1,4 +1,5 @@
 import { http, HttpResponse, type RequestHandler } from 'msw'
+import type { ApiPost } from '@/features/posts/types'
 import type { User } from '@/features/users/types'
 
 export const API = 'https://jsonplaceholder.typicode.com'
@@ -64,5 +65,32 @@ export function usersHandler(count = 10) {
   })
 }
 
+/** GET /users/:id over the same fixtures; unknown ids are a 404 like the real API. */
+export function userByIdHandler(count = 10) {
+  const users = makeUsers(count)
+  return http.get(`${API}/users/:id`, ({ params }) => {
+    const user = users.find((candidate) => candidate.id === Number(params.id))
+    return user ? HttpResponse.json(user) : HttpResponse.json({}, { status: 404 })
+  })
+}
+
+export function makePosts(userId: number, count: number): ApiPost[] {
+  return Array.from({ length: count }, (_, index) => ({
+    id: (userId - 1) * count + index + 1,
+    userId,
+    title: `Post ${index + 1} by user ${userId}`,
+    body: `Body of post ${index + 1}\nsecond line`,
+  }))
+}
+
+/** GET /posts?userId=: every user has `perUser` posts. */
+export function postsHandler(perUser = 10) {
+  return http.get(`${API}/posts`, ({ request }) => {
+    const url = new URL(request.url)
+    const userId = Number(url.searchParams.get('userId'))
+    return paginated(makePosts(userId, perUser), url)
+  })
+}
+
 /** Default handlers; feature tests add or override their own with `server.use(...)`. */
-export const handlers: RequestHandler[] = [usersHandler(10)]
+export const handlers: RequestHandler[] = [usersHandler(10), userByIdHandler(10), postsHandler(10)]
