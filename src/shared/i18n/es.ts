@@ -1,0 +1,55 @@
+import type { Dictionary } from './en'
+
+export const es: Dictionary = {
+  appLanguage: 'Idioma',
+  switchToDark: 'Activar modo oscuro',
+  switchToLight: 'Activar modo claro',
+
+  users: 'Usuarios',
+  searchLabel: 'Buscar usuarios por nombre',
+  searchPlaceholder: 'Buscar por nombre',
+  clearSearch: 'Limpiar búsqueda',
+  usersCount: (n) => (n === 1 ? '1 usuario' : `${n} usuarios`),
+  loadingUsers: 'Cargando usuarios…',
+  usersErrorTitle: 'No pudimos cargar los usuarios',
+  errorBody: 'Revisa tu conexión e inténtalo de nuevo.',
+  retry: 'Reintentar',
+  noResults: (query) => `Ningún usuario coincide con «${query}»`,
+  noResultsHint: 'Prueba con otro nombre.',
+
+  pickUserTitle: 'Elige un usuario',
+  pickUserBody: 'Verás sus publicaciones aquí y podrás escribir una nueva.',
+  backToUsers: 'Usuarios',
+  userNotFoundTitle: 'Usuario no encontrado',
+  userNotFoundBody: 'No pudimos encontrar a ese usuario.',
+
+  newPost: 'Nueva publicación',
+  titleLabel: 'Título',
+  bodyLabel: 'Texto',
+  requiredNote: '* Obligatorio',
+  titleRequired: 'Escribe un título.',
+  titleTooLong: 'Máximo 100 caracteres.',
+  bodyRequired: 'Escribe el texto de la publicación.',
+  demoNote: 'La API de prueba no guarda datos: tu publicación solo aparecerá en esta lista.',
+  publish: 'Publicar',
+  publishing: 'Publicando…',
+  publishError: 'No pudimos publicar tu publicación. Inténtalo de nuevo.',
+  postPublished: 'Publicación creada',
+
+  posts: 'Publicaciones',
+  postsCount: (n) => (n === 1 ? '1 publicación' : `${n} publicaciones`),
+  loadingPosts: 'Cargando publicaciones…',
+  postsErrorTitle: 'No pudimos cargar las publicaciones',
+  noPostsTitle: 'Todavía no hay publicaciones',
+  noPostsBody: 'Escribe la primera con el formulario.',
+  newBadge: 'Nueva',
+
+  loadMore: 'Cargar más',
+  loadingMore: 'Cargando más…',
+  loadMoreError: 'No pudimos cargar más.',
+
+  notFoundTitle: 'Página no encontrada',
+  notFoundBody: 'La página que buscas no existe.',
+  goHome: 'Ir a usuarios',
+  unexpectedErrorTitle: 'Algo salió mal',
+}
