@@ -44,10 +44,6 @@ export const es: Dictionary = {
   noPostsBody: 'Escribe la primera con el formulario.',
   newBadge: 'Nueva',
 
-  loadMore: 'Cargar más',
-  loadingMore: 'Cargando más…',
-  loadMoreError: 'No pudimos cargar más.',
-
   notFoundTitle: 'Página no encontrada',
   notFoundBody: 'La página que buscas no existe.',
   goHome: 'Ir a usuarios',

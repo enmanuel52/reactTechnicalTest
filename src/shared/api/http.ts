@@ -1,5 +1,4 @@
 export const API_BASE_URL = 'https://jsonplaceholder.typicode.com'
-export const PAGE_SIZE = 10
 
 export class HttpError extends Error {
   readonly status: number
@@ -49,33 +48,4 @@ export async function postJson<TResponse>(
     signal,
   })
   return (await response.json()) as TResponse
-}
-
-export interface Page<T> {
-  items: T[]
-  /** 1-based page number. */
-  page: number
-  /** Total number of items across all pages (from the X-Total-Count header). */
-  total: number
-}
-
-/** Fetches one page of a collection using json-server style `_page` / `_limit`. */
-export async function getPage<T>(
-  path: string,
-  { params, page, signal }: RequestOptions & { page: number },
-): Promise<Page<T>> {
-  const response = await request(buildUrl(path, { ...params, _page: page, _limit: PAGE_SIZE }), {
-    signal,
-  })
-  const items = (await response.json()) as T[]
-  const header = Number(response.headers.get('X-Total-Count'))
-  return { items, page, total: Number.isFinite(header) && header > 0 ? header : items.length }
-}
-
-/** `getNextPageParam` for TanStack's useInfiniteQuery over `Page<T>` results. */
-export function getNextPageParam(lastPage: Page<unknown>, allPages: Page<unknown>[]) {
-  const loaded = allPages.reduce((count, page) => count + page.items.length, 0)
-  // An empty page means the server has nothing more, whatever the total says.
-  if (lastPage.items.length === 0 || loaded >= lastPage.total) return undefined
-  return lastPage.page + 1
 }
