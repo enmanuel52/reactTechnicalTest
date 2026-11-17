@@ -6,13 +6,6 @@ import { usePreferences } from '@/shared/store/preferences'
 import { API, makeUsers } from '@/test/msw/handlers'
 import { server } from '@/test/msw/server'
 import { renderApp } from '@/test/renderWithProviders'
-import { act } from 'react'
-
-function triggerIntersection() {
-  const observers = (IntersectionObserver as unknown as { instances: { trigger: () => void }[] })
-    .instances
-  act(() => observers.at(-1)?.trigger())
-}
 
 describe('UsersPane', () => {
   beforeEach(() => usePreferences.setState({ theme: 'light', lang: 'en' }))
@@ -65,7 +58,7 @@ describe('UsersPane', () => {
     expect(requests[0]?.searchParams.has('_limit')).toBe(false)
   })
 
-  it('has no load-more control at the end of the list, even when it is scrolled into view', async () => {
+  it('ends the list with the last user, with no load-more control', async () => {
     const requests: string[] = []
     server.use(
       http.get(`${API}/users`, () => {
@@ -74,9 +67,9 @@ describe('UsersPane', () => {
       }),
     )
     renderApp()
-    await screen.findByText('Clementina DuBuque')
-
-    triggerIntersection()
+    const list = await screen.findByRole('list')
+    await waitFor(() => expect(within(list).getAllByRole('link')).toHaveLength(10))
+    expect(within(list).getAllByRole('link').at(-1)).toHaveTextContent('Clementina DuBuque')
 
     expect(screen.queryByRole('button', { name: 'Load more' })).not.toBeInTheDocument()
     expect(screen.queryByText('Loading more…')).not.toBeInTheDocument()

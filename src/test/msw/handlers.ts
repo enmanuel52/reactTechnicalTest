@@ -34,15 +34,6 @@ export function makeUsers(count: number) {
   return Array.from({ length: count }, (_, index) => makeUser(index + 1))
 }
 
-/** Mimics json-server: `_page` / `_limit` slicing plus the X-Total-Count header. */
-export function paginated<T>(items: T[], url: URL) {
-  const page = Number(url.searchParams.get('_page') ?? 1)
-  const limit = Number(url.searchParams.get('_limit') ?? items.length)
-  return HttpResponse.json(items.slice((page - 1) * limit, page * limit), {
-    headers: { 'X-Total-Count': String(items.length) },
-  })
-}
-
 /**
  * Handler serving `count` users; override per test with `server.use(...)`.
  * Like the real API, `name_like` is a case-insensitive regex (invalid ones are a 500).
@@ -50,15 +41,11 @@ export function paginated<T>(items: T[], url: URL) {
 export function usersHandler(count = 10) {
   const users = makeUsers(count)
   return http.get(`${API}/users`, ({ request }) => {
-    const url = new URL(request.url)
-    const nameLike = url.searchParams.get('name_like')
-    if (!nameLike) return paginated(users, url)
+    const nameLike = new URL(request.url).searchParams.get('name_like')
+    if (!nameLike) return HttpResponse.json(users)
     try {
       const pattern = new RegExp(nameLike, 'i')
-      return paginated(
-        users.filter((user) => pattern.test(user.name)),
-        url,
-      )
+      return HttpResponse.json(users.filter((user) => pattern.test(user.name)))
     } catch {
       return new HttpResponse(null, { status: 500 })
     }
@@ -86,9 +73,8 @@ export function makePosts(userId: number, count: number): ApiPost[] {
 /** GET /posts?userId=: every user has `perUser` posts. */
 export function postsHandler(perUser = 10) {
   return http.get(`${API}/posts`, ({ request }) => {
-    const url = new URL(request.url)
-    const userId = Number(url.searchParams.get('userId'))
-    return paginated(makePosts(userId, perUser), url)
+    const userId = Number(new URL(request.url).searchParams.get('userId'))
+    return HttpResponse.json(makePosts(userId, perUser))
   })
 }
 
