@@ -42,10 +42,26 @@ export function paginated<T>(items: T[], url: URL) {
   })
 }
 
-/** Handler serving `count` users; override per test with `server.use(...)`. */
+/**
+ * Handler serving `count` users; override per test with `server.use(...)`.
+ * Like the real API, `name_like` is a case-insensitive regex (invalid ones are a 500).
+ */
 export function usersHandler(count = 10) {
   const users = makeUsers(count)
-  return http.get(`${API}/users`, ({ request }) => paginated(users, new URL(request.url)))
+  return http.get(`${API}/users`, ({ request }) => {
+    const url = new URL(request.url)
+    const nameLike = url.searchParams.get('name_like')
+    if (!nameLike) return paginated(users, url)
+    try {
+      const pattern = new RegExp(nameLike, 'i')
+      return paginated(
+        users.filter((user) => pattern.test(user.name)),
+        url,
+      )
+    } catch {
+      return new HttpResponse(null, { status: 500 })
+    }
+  })
 }
 
 /** Default handlers; feature tests add or override their own with `server.use(...)`. */
