@@ -1,7 +1,11 @@
+import { RouterProvider } from 'react-router-dom'
+import { AppProviders } from './providers'
+import { router } from './router'
+
 export function App() {
   return (
-    <h1 className="p-6 text-[22px] leading-7">
-      the<span className="font-medium text-primary">Social</span>Network
-    </h1>
+    <AppProviders>
+      <RouterProvider router={router} />
+    </AppProviders>
   )
 }
