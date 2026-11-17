@@ -50,10 +50,9 @@ export async function getPage<T>(
   path: string,
   { params, page, signal }: RequestOptions & { page: number },
 ): Promise<Page<T>> {
-  const response = await request(
-    buildUrl(path, { ...params, _page: page, _limit: PAGE_SIZE }),
-    { signal },
-  )
+  const response = await request(buildUrl(path, { ...params, _page: page, _limit: PAGE_SIZE }), {
+    signal,
+  })
   const items = (await response.json()) as T[]
   const header = Number(response.headers.get('X-Total-Count'))
   return { items, page, total: Number.isFinite(header) && header > 0 ? header : items.length }
