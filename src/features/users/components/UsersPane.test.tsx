@@ -44,7 +44,7 @@ describe('UsersPane', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 
-  it('loads further pages of 10 on scroll and with the Load more button', async () => {
+  it('loads further pages of 10 only when the Load more icon button is pressed', async () => {
     const user = userEvent.setup()
     server.use(usersHandler(25))
     renderApp()
@@ -53,14 +53,17 @@ describe('UsersPane', () => {
     expect(screen.getAllByRole('link')).toHaveLength(10)
     expect(screen.getByText('25 users')).toBeInTheDocument()
 
-    // Page 2: the sentinel scrolls into view.
+    // Scrolling to the end does nothing: no automatic loading for users.
     triggerIntersection()
+    expect(screen.getAllByRole('link')).toHaveLength(10)
+
+    await user.click(screen.getByRole('button', { name: 'Load more' }))
     await waitFor(() => expect(screen.getAllByRole('link')).toHaveLength(20))
 
-    // Page 3: keyboard-accessible fallback button.
     await user.click(await screen.findByRole('button', { name: 'Load more' }))
     await waitFor(() => expect(screen.getAllByRole('link')).toHaveLength(25))
 
+    // Everything is loaded, so the button goes away.
     expect(screen.queryByRole('button', { name: 'Load more' })).not.toBeInTheDocument()
   })
 
@@ -77,7 +80,7 @@ describe('UsersPane', () => {
           : HttpResponse.json([]),
       ),
     )
-    triggerIntersection()
+    await user.click(screen.getByRole('button', { name: 'Load more' }))
 
     const alert = await screen.findByText("We couldn't load more.")
     expect(alert).toBeInTheDocument()

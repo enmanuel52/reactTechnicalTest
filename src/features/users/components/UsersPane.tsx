@@ -69,6 +69,7 @@ export function UsersPane() {
               isFetchingNextPage={isFetchingNextPage}
               isError={isFetchNextPageError}
               onLoadMore={loadMore}
+              mode="button"
             />
           </>
         )}
