@@ -73,3 +73,23 @@ export const ArrowBackIcon = (props: IconProps) => (
     <path d="M19 12H5M12 19l-7-7 7-7" />
   </Icon>
 )
+
+/** Solid "!" circle used inside text fields in the error state. */
+export const ErrorFilledIcon = ({ size = 24, ...props }: IconProps) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    aria-hidden="true"
+    {...props}
+  >
+    <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+  </svg>
+)
+
+export const SpinnerIcon = (props: IconProps) => (
+  <Icon strokeWidth={2.5} {...props}>
+    <path d="M21 12a9 9 0 1 1-9-9" />
+  </Icon>
+)

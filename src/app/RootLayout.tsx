@@ -1,6 +1,7 @@
 import { Outlet, useMatch } from 'react-router-dom'
 import { UsersPane } from '@/features/users/components/UsersPane'
 import { useApplyPreferences } from '@/shared/store/preferences'
+import { Snackbar } from '@/shared/ui/Snackbar'
 import { AppHeader } from './AppHeader'
 
 /**
@@ -22,6 +23,7 @@ export function RootLayout() {
           <Outlet />
         </div>
       </main>
+      <Snackbar />
     </div>
   )
 }
