@@ -49,7 +49,7 @@ describe('user search', () => {
     server.use(
       http.get(`${API}/users`, ({ request }) => {
         requested.push(new URL(request.url).searchParams.get('name_like') ?? '')
-        return HttpResponse.json([], { headers: { 'X-Total-Count': '0' } })
+        return HttpResponse.json([])
       }),
     )
     renderApp()

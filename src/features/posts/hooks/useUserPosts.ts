@@ -1,27 +1,23 @@
-import { useInfiniteQuery, type InfiniteData } from '@tanstack/react-query'
-import { getNextPageParam, type Page } from '@/shared/api/http'
-import { fetchPostsPage } from '../api'
+import { useQuery } from '@tanstack/react-query'
+import { fetchPosts } from '../api'
 import { postsKeys } from '../queryKeys'
 import type { ApiPost, PostView } from '../types'
 
-function toView(post: ApiPost): PostView {
-  return { key: `api-${post.id}`, title: post.title, body: post.body, isNew: false }
+// Defined at module level so `select` keeps a stable identity between renders.
+function toViews(posts: ApiPost[]): PostView[] {
+  return posts.map((post) => ({
+    key: `api-${post.id}`,
+    title: post.title,
+    body: post.body,
+    isNew: false,
+  }))
 }
 
-function selectPosts(data: InfiniteData<Page<ApiPost>, number>) {
-  return {
-    posts: data.pages.flatMap((page) => page.items.map(toView)),
-    total: data.pages[0]?.total ?? 0,
-  }
-}
-
-/** A user's posts, 10 per page, loaded with infinite scroll. */
+/** A user's posts from the API, loaded in one request. */
 export function useUserPosts(userId: number) {
-  return useInfiniteQuery({
+  return useQuery({
     queryKey: postsKeys.byUser(userId),
-    queryFn: ({ pageParam, signal }) => fetchPostsPage(userId, pageParam, signal),
-    initialPageParam: 1,
-    getNextPageParam,
-    select: selectPosts,
+    queryFn: ({ signal }) => fetchPosts(userId, signal),
+    select: toViews,
   })
 }

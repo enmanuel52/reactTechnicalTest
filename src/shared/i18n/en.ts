@@ -43,10 +43,6 @@ export const en = {
   noPostsBody: 'Write the first one with the form.',
   newBadge: 'New',
 
-  loadMore: 'Load more',
-  loadingMore: 'Loading more…',
-  loadMoreError: "We couldn't load more.",
-
   notFoundTitle: 'Page not found',
   notFoundBody: "The page you're looking for doesn't exist.",
   goHome: 'Go to users',

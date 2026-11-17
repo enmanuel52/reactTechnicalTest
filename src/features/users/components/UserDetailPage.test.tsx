@@ -1,18 +1,11 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
-import { act } from 'react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { usePreferences } from '@/shared/store/preferences'
-import { API, postsHandler } from '@/test/msw/handlers'
+import { API, makePosts, postsHandler } from '@/test/msw/handlers'
 import { server } from '@/test/msw/server'
 import { renderApp } from '@/test/renderWithProviders'
-
-function triggerIntersection() {
-  const observers = (IntersectionObserver as unknown as { instances: { trigger: () => void }[] })
-    .instances
-  act(() => observers.at(-1)?.trigger())
-}
 
 const postsList = () =>
   within(screen.getByRole('region', { name: 'Posts' })).queryAllByRole('article')
@@ -87,17 +80,25 @@ describe('user detail page', () => {
     expect(screen.getByText('Write the first one with the form.')).toBeInTheDocument()
   })
 
-  it('loads more posts, 10 at a time, as the list is scrolled', async () => {
-    server.use(postsHandler(25))
+  it("loads all of a user's posts in a single request, without pagination", async () => {
+    const requests: URL[] = []
+    server.use(
+      http.get(`${API}/posts`, ({ request }) => {
+        requests.push(new URL(request.url))
+        return HttpResponse.json(makePosts(1, 25))
+      }),
+    )
     renderApp({ route: '/users/1' })
 
-    await waitFor(() => expect(postsList()).toHaveLength(10))
-    expect(screen.getByText('25 posts')).toBeInTheDocument()
-
-    triggerIntersection()
-    await waitFor(() => expect(postsList()).toHaveLength(20))
-    triggerIntersection()
+    // More posts than the old page size of 10: all of them render at once.
     await waitFor(() => expect(postsList()).toHaveLength(25))
+    expect(screen.getByText('25 posts')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Load more' })).not.toBeInTheDocument()
+
+    expect(requests).toHaveLength(1)
+    expect(requests[0]?.searchParams.get('userId')).toBe('1')
+    expect(requests[0]?.searchParams.has('_page')).toBe(false)
+    expect(requests[0]?.searchParams.has('_limit')).toBe(false)
   })
 
   it('offers a way back to the list that keeps the current search', async () => {

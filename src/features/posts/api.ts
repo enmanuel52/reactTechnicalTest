@@ -1,8 +1,9 @@
-import { getPage, postJson } from '@/shared/api/http'
+import { getJson, postJson } from '@/shared/api/http'
 import type { ApiPost } from './types'
 
-export function fetchPostsPage(userId: number, page: number, signal?: AbortSignal) {
-  return getPage<ApiPost>('/posts', { page, params: { userId }, signal })
+/** All of a user's posts, in one request (JSONPlaceholder has 10 per user). */
+export function fetchPosts(userId: number, signal?: AbortSignal) {
+  return getJson<ApiPost[]>('/posts', { params: { userId }, signal })
 }
 
 /**
