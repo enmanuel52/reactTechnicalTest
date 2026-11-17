@@ -10,8 +10,9 @@ JSONPlaceholder accepts writes but never stores them, so posts you create are sa
 
 - **Users list** with server-side search by name (`?q=` is kept in the URL, so a search can be shared).
 - **User detail** with their posts, and a form to create a new one (title and text validated).
-- **Pagination, 10 per page**, for both users and posts, loaded with infinite scroll. A "Load more"
-  button is always available as a fallback (keyboard users, failed requests).
+- **Pagination, 10 per page**, for both users and posts. Users load the next page when you press the
+  "Load more" icon button; posts load automatically as you scroll, with a "Load more" button as a
+  fallback (keyboard users, failed requests).
 - **Loading and error states** everywhere: first load, next page, search, retry buttons, empty and
   "no results" screens, a not-found page, and a route-level error boundary.
 - **Your posts are pinned first** with a "New" badge, don't count towards the page size, and survive
@@ -51,7 +52,7 @@ mocked at the network level, so the real `fetch` code runs). IndexedDB is provid
 - **Pure logic**: pagination helpers, regex escaping, initials/avatar colours, the zod schema, retry policy.
 - **Hooks and stores**: debounce, theme/language preferences.
 - **User flows** through the real route tree: list, loading/error/retry, search, deep links,
-  infinite scroll, posts, validation, creating a post (API call + local save + "New" badge), local
+  load more (button for users, scroll for posts), posts, validation, creating a post (API call + local save + "New" badge), local
   posts shown when the API fails, language switch.
 
 ## Stack
@@ -92,7 +93,9 @@ already loaded. It is debounced (300 ms). Two details worth knowing: `name_like`
 expression on the server (an unescaped `(` is a 500, and `.` matches anything), so input is escaped
 first; and previous results stay on screen while the next ones load, instead of flashing a spinner.
 
-**Pagination.** `getPage` adds `_page` and `_limit=10` and reads the total from the `X-Total-Count`
+**Pagination.** Users use an explicit "Load more" icon button, so the person decides when
+more users are fetched. Posts use infinite scroll. Both share one `LoadMore` component (`mode="button"` or the default
+`scroll`). `getPage` adds `_page` and `_limit=10` and reads the total from the `X-Total-Count`
 header. The real data has exactly 10 users and 10 posts per user, so live there is only ever one
 page; the "next page" paths are covered by tests that serve 25 items.
 
