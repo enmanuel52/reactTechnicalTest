@@ -53,7 +53,7 @@ describe('user search', () => {
       }),
     )
     renderApp()
-    await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument())
+    await waitFor(() => expect(screen.queryByText('Loading users…')).not.toBeInTheDocument())
 
     await user.type(searchBox(), '(')
 

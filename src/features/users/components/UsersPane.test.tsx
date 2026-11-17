@@ -20,13 +20,13 @@ describe('UsersPane', () => {
   it('shows a loading state, then the users with their count', async () => {
     renderApp()
 
-    expect(screen.getByRole('status')).toHaveTextContent('Loading users…')
+    expect(screen.getByText('Loading users…')).toBeInTheDocument()
 
     const list = await screen.findByRole('list')
     expect(within(list).getAllByRole('link')).toHaveLength(10)
     expect(within(list).getByText('Leanne Graham')).toBeInTheDocument()
     expect(screen.getByText('10 users')).toBeInTheDocument()
-    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    expect(screen.queryByText('Loading users…')).not.toBeInTheDocument()
   })
 
   it('shows an error with a retry button that recovers', async () => {

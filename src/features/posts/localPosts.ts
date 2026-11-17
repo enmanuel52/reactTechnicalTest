@@ -10,6 +10,6 @@ export async function listLocalPosts(userId: number) {
 
 export async function addLocalPost(userId: number, input: PostInput): Promise<LocalPost> {
   const post = { userId, ...input, createdAt: Date.now() }
-  const id = await db.posts.add(post as LocalPost)
+  const id = await db.posts.add(post)
   return { ...post, id }
 }
