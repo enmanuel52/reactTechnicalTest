@@ -1,4 +1,4 @@
-import { useInfiniteQuery, type InfiniteData } from '@tanstack/react-query'
+import { keepPreviousData, useInfiniteQuery, type InfiniteData } from '@tanstack/react-query'
 import { getNextPageParam, type Page } from '@/shared/api/http'
 import { fetchUsersPage } from '../api'
 import { usersKeys } from '../queryKeys'
@@ -9,12 +9,15 @@ function selectUsers(data: InfiniteData<Page<User>, number>) {
   return { users: data.pages.flatMap((page) => page.items), total: data.pages[0]?.total ?? 0 }
 }
 
-export function useUsers() {
+/** Users whose name contains `query` (all users when empty), 10 per page. */
+export function useUsers(query = '') {
   return useInfiniteQuery({
-    queryKey: usersKeys.list(),
-    queryFn: ({ pageParam, signal }) => fetchUsersPage(pageParam, signal),
+    queryKey: usersKeys.list(query),
+    queryFn: ({ pageParam, signal }) => fetchUsersPage(pageParam, query, signal),
     initialPageParam: 1,
     getNextPageParam,
     select: selectUsers,
+    // Keep showing the previous results while a new search loads, instead of flashing a spinner.
+    placeholderData: keepPreviousData,
   })
 }
