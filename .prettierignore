@@ -1,0 +1,5 @@
+dist
+coverage
+.agents
+skills-lock.json
+package-lock.json
