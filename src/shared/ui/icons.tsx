@@ -93,3 +93,9 @@ export const SpinnerIcon = (props: IconProps) => (
     <path d="M21 12a9 9 0 1 1-9-9" />
   </Icon>
 )
+
+export const ExpandMoreIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="m6 9 6 6 6-6" />
+  </Icon>
+)
