@@ -16,7 +16,12 @@ export function createQueryClient() {
         staleTime: 5 * 60 * 1000,
         retry: shouldRetry,
         refetchOnWindowFocus: false,
+        // By default TanStack pauses requests while offline, which would leave the UI
+        // on a spinner forever. Fail fast instead so the error state and Retry show up
+        // (and IndexedDB reads, which need no network, are never paused).
+        networkMode: 'always',
       },
+      mutations: { networkMode: 'always' },
     },
   })
 }
