@@ -47,3 +47,10 @@ export const UsersIcon = (props: IconProps) => (
     <path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5" />
   </Icon>
 )
+
+export const ErrorCircleIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 8v5M12 16.5v.01" />
+  </Icon>
+)
