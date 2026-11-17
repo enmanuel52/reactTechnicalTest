@@ -1,4 +1,5 @@
 import { useLocation, useParams } from 'react-router-dom'
+import { NewPostForm } from '@/features/posts/components/NewPostForm'
 import { PostsSection } from '@/features/posts/components/PostsSection'
 import { HttpError } from '@/shared/api/http'
 import { useT } from '@/shared/i18n/useT'
@@ -49,6 +50,7 @@ function UserDetail({ userId }: { userId: number }) {
         {t.backToUsers}
       </ButtonLink>
       <UserHeader user={user} />
+      <NewPostForm userId={user.id} />
       <div className="h-px bg-outline-variant" />
       <PostsSection userId={user.id} />
     </div>

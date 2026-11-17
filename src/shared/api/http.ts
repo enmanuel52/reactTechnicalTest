@@ -37,6 +37,20 @@ export async function getJson<T>(path: string, { params, signal }: RequestOption
   return (await response.json()) as T
 }
 
+export async function postJson<TResponse>(
+  path: string,
+  body: unknown,
+  { signal }: Pick<RequestOptions, 'signal'> = {},
+) {
+  const response = await request(buildUrl(path), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+    body: JSON.stringify(body),
+    signal,
+  })
+  return (await response.json()) as TResponse
+}
+
 export interface Page<T> {
   items: T[]
   /** 1-based page number. */

@@ -92,5 +92,18 @@ export function postsHandler(perUser = 10) {
   })
 }
 
+/** POST /posts: like the real API, answers 201 with the body and the fake id 101. */
+export function createPostHandler() {
+  return http.post(`${API}/posts`, async ({ request }) => {
+    const body = (await request.json()) as Record<string, unknown>
+    return HttpResponse.json({ ...body, id: 101 }, { status: 201 })
+  })
+}
+
 /** Default handlers; feature tests add or override their own with `server.use(...)`. */
-export const handlers: RequestHandler[] = [usersHandler(10), userByIdHandler(10), postsHandler(10)]
+export const handlers: RequestHandler[] = [
+  usersHandler(10),
+  userByIdHandler(10),
+  postsHandler(10),
+  createPostHandler(),
+]
