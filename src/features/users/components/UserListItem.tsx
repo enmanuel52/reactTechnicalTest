@@ -1,12 +1,14 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import type { User } from '../types'
 import { UserAvatar } from './UserAvatar'
 
 export function UserListItem({ user }: { user: User }) {
+  // Carry the current search (?q=) along so it survives selecting a user.
+  const { search } = useLocation()
   return (
     <li>
       <NavLink
-        to={`/users/${user.id}`}
+        to={{ pathname: `/users/${user.id}`, search }}
         className={({ isActive }) =>
           `flex min-h-18 w-full items-center gap-4 rounded-2xl px-4 py-2 text-left hover:bg-on-surface/8 ${
             isActive ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface'
