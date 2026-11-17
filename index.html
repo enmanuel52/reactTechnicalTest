@@ -14,6 +14,19 @@
       rel="stylesheet"
     />
     <title>theSocialNetwork</title>
+    <script>
+      // Apply the saved (or system) theme/language before first paint to avoid a flash.
+      try {
+        var saved = JSON.parse(localStorage.getItem('tsn-preferences') || 'null')
+        var prefs = (saved && saved.state) || {}
+        var dark = prefs.theme
+          ? prefs.theme === 'dark'
+          : window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (dark) document.documentElement.classList.add('dark')
+        document.documentElement.lang =
+          prefs.lang || (/^es/i.test(navigator.language) ? 'es' : 'en')
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>
