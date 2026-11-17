@@ -3,13 +3,20 @@ import { useT } from '@/shared/i18n/useT'
 import { ErrorBanner } from '@/shared/ui/ErrorBanner'
 import { LoadMore } from '@/shared/ui/LoadMore'
 import { LoadingState } from '@/shared/ui/LoadingState'
+import { useLocalPosts } from '../hooks/useLocalPosts'
 import { useUserPosts } from '../hooks/useUserPosts'
 import { PostItem } from './PostItem'
 
+/**
+ * Posts written in the app (saved locally) are pinned above the API's posts and
+ * don't count towards the page size. They show even while the API is loading or
+ * has failed, since they come from a different source.
+ */
 export function PostsSection({ userId }: { userId: number }) {
   const t = useT()
+  const local = useLocalPosts(userId)
   const {
-    data,
+    data: api,
     isPending,
     isError,
     refetch,
@@ -20,6 +27,10 @@ export function PostsSection({ userId }: { userId: number }) {
   } = useUserPosts(userId)
   const loadMore = useCallback(() => void fetchNextPage(), [fetchNextPage])
 
+  const posts = [...(local.data ?? []), ...(api?.posts ?? [])]
+  // Only call the list empty once both sources have answered.
+  const isEmpty = api !== undefined && local.data !== undefined && posts.length === 0
+
   return (
     <section aria-labelledby="posts-heading" className="flex flex-col">
       <div className="flex items-baseline justify-between pb-2">
@@ -27,38 +38,39 @@ export function PostsSection({ userId }: { userId: number }) {
           {t.posts}
         </h3>
         <span aria-live="polite" className="text-xs text-on-surface-variant">
-          {data ? t.postsCount(data.total) : ''}
+          {api ? t.postsCount((local.data?.length ?? 0) + api.total) : ''}
         </span>
       </div>
 
+      {posts.length > 0 && (
+        <ul className="m-0 list-none p-0">
+          {posts.map((post) => (
+            <PostItem key={post.key} post={post} />
+          ))}
+        </ul>
+      )}
+
       {isPending ? (
         <LoadingState label={t.loadingPosts} className="py-4" />
-      ) : isError && !data ? (
+      ) : isError && !api ? (
         <ErrorBanner
           title={t.postsErrorTitle}
           body={t.errorBody}
           retryLabel={t.retry}
           onRetry={() => void refetch()}
         />
-      ) : data.posts.length === 0 ? (
+      ) : isEmpty ? (
         <div className="py-8 text-center">
           <p className="text-base leading-6">{t.noPostsTitle}</p>
           <p className="text-on-surface-variant">{t.noPostsBody}</p>
         </div>
       ) : (
-        <>
-          <ul className="m-0 list-none p-0">
-            {data.posts.map((post) => (
-              <PostItem key={post.key} post={post} />
-            ))}
-          </ul>
-          <LoadMore
-            hasNextPage={hasNextPage}
-            isFetchingNextPage={isFetchingNextPage}
-            isError={isFetchNextPageError}
-            onLoadMore={loadMore}
-          />
-        </>
+        <LoadMore
+          hasNextPage={hasNextPage}
+          isFetchingNextPage={isFetchingNextPage}
+          isError={isFetchNextPageError}
+          onLoadMore={loadMore}
+        />
       )}
     </section>
   )
