@@ -159,3 +159,65 @@ src/
   Storybook for the UI primitives, MSW in the dev server so loading/error states can be demoed on
   demand, and stricter lint rules (e.g. `strict-type-checked`).
 - **Documentation**: an architecture decision record per major choice, and a CONTRIBUTING guide.
+
+---
+
+## Decisiones
+
+- **Vite en lugar de Next.js.** La app no tiene lógica de servidor: consume una API pública y guarda
+  datos en el navegador. Una aplicación de una sola página con Vite es más simple de ejecutar y se integra directamente con Vitest.
+- **Estado del servidor, del cliente y de la URL por separado.** TanStack Query maneja lo que viene de
+  la API o IndexedDB (caché, carga, errores, reintentos); Zustand solo guarda preferencias de UI
+  (tema, idioma) y el mensaje del snackbar; la URL guarda lo que debe poder compartirse (usuario
+  seleccionado y término de búsqueda).
+- **Crear un post: POST a la API y luego guardado local.** Solo si el `POST /posts` tiene éxito se
+  escribe en Dexie y se refresca la lista, así nunca se guarda nada si la petición falla. La
+  respuesta de la API se ignora porque siempre devuelve el id falso `101`.
+- **Dexie para la base de datos local.** Una base de datos ligera sin los límites de `localStorage`. 
+Una base SQL en el navegador habría añadido megabytes de WebAssembly para una tabla de cinco columnas.
+- **Posts locales fijados arriba.** Vienen de otra fuente (DB), por lo que son una consulta
+  aparte, listada antes que los de la API y ordenada del más nuevo al más antiguo. Se siguen
+  mostrando aunque la API falle.
+- **Sin paginación.** JSONPlaceholder tiene 10 usuarios y 10 posts por usuario, agregaría complejidad innecesaria.
+- **Abrir un usuario directamente por URL.** Se reutiliza la lista en caché o se consulta
+  `/users/:id`, de modo que `/users/7` funciona en frío; los ids desconocidos muestran un estado de
+  "no encontrado".
+- **Validación con zod + React Hook Form.** Título obligatorio (máx. 100 caracteres, con contador) y
+  texto obligatorio. El esquema devuelve _claves_ de mensaje que el formulario traduce, así la
+  validación no depende del idioma activo.
+- **Fallar rápido sin conexión.** Se usa `networkMode: 'always'` para que aparezcan los errores y
+  botones de reintento en lugar de un spinner infinito. Los 4xx no se reintentan; los errores de red
+  y 5xx se reintentan una vez.
+- **Estilos e internacionalización.** Los colores de Material 3 son variables CSS expuestas como
+  utilidades de Tailwind (el modo oscuro es una sola clase en `<html>`). Para i18n se usa un
+  diccionario tipado propio (`en` es la fuente de verdad), suficiente para dos idiomas.
+- **Estructura por _features_**, con los bloques compartidos aparte (`app/`, `features/`, `shared/`,
+  `test/`).
+
+## Qué haría con más tiempo (resumen en español)
+- **Editar y eliminar posts propios**, y sincronizar los datos locales entre dispositivos (cola de
+  sincronización, PWA/modo offline o un backend real).
+- **Actualizaciones optimistas** al crear posts.
+- **Paginación y virtualización de listas** (TanStack Virtual) si los datos crecieran, y recordar la
+  posición de scroll al volver a la lista.
+- **Precargar la ruta de detalle** al pasar el cursor o enfocar un usuario.
+- **Manejar IndexedDB no disponible** (algunos modos privados) con un respaldo en memoria y un aviso.
+- **Migrar a `react-i18next`** si se necesitan más idiomas o reglas de plurales/formatos.
+- **Mayor resiliencia**: _timeouts_, _backoff_ exponencial, monitoreo de errores (Sentry) y un aviso
+  global de falta de conexión.
+- **Experiencia de desarrollo**: CI, _pre-commit hooks_, Storybook, MSW en el servidor de desarrollo
+  y reglas de lint más estrictas.
+
+## Cómo usé la IA
+
+- **Claude-design** para crear un diseño responsivo que cubriera las funcionalidades de la aplicación.
+- **Responsiveness** en pantallas de desktop la información se muestra en un vista canónica lista/detalles
+  Donde en dispolsitivo móviles pasa a mostrarse en 2 pantallas.
+- **Plan mode** a pesar de que el SDD (Spec-Driven Development) es mi metodología de preferencia para desarrollar proyectos AI first, opté por plan-mode en **Claude** ya que es más que suficiente dada la simpleza de este proyecto.
+- **Claude-interview** para cubrir todos los casos límite (edge cases), refinar y mejorar las especificaciones iniciales, resolver ambigüedades y contradicciones del stack, y finalmente producir un plan de construcción detallado  que sirva como guía para desarrollar el proyecto paso a paso.
+- **Prompting**: enumere cada una de las funcionalidades que el proyecto tendría, incluyendo especificaciones
+en la gestión de los posts, incluí el stack que se usaría en la aplicación. Destaco el uso de terminología adcuada para la activación de skills.
+- **Git** tengo una skill que básicamente define la forma en la que se implementa Gitflow, el uso de ramas para las diferentes
+features, el formato en que se realizan los commits, realizar commits para cambios modulares y funcionales. De esa forma
+registrar el paso a paso de la implementación planeada previamente con **claude-code**.
+- **Skills** uso de skills que definen prácticas arquitectura, calidad de código y testing.
